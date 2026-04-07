@@ -1,6 +1,6 @@
 import load_fun as ld
 
-# ld.insert_to_table_from_Excel('orders', 'staging', 'Orders')
+ld.insert_to_table_from_Excel('orders', 'staging', 'Orders')
 
 # ld.insert_to_table_from_Excel('people', 'staging', 'People')
 
