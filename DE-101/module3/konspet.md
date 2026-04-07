@@ -6,7 +6,7 @@
 >backfilling - обработка исторических данных.
 
 
-Airflow - оркестратор задач, где pipline - это DAG.
+Airflow - оркестратор задач, где pipline - это [DAG](https://github.com/Dzhabrail02/DE/blob/main/DE-101/module3/etl_orders.py).
 Для запуска etl в Airflow создал модуль [etl_init](https://github.com/Dzhabrail02/DE/blob/main/DE-101/module3/etl_init.py): в нем функции для ETL таблиц в staging, core_layer и data_mart, 
 а также функции логирования этапов дага - в таблицу etl_logs записываются: 
 - кол-во строк, которые было загружено
