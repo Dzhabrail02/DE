@@ -13,7 +13,7 @@ Airflow - оркестратор задач, где pipline - это DAG.
 - логи в json-формате (полученные функцией-декоратором `json_logs`)
 - имя и id дага
 
-![etl_logs]()
+![etl_logs](https://github.com/Dzhabrail02/DE/blob/main/DE-101/module3/images/etl_logs%20dbeaver.png?raw=true)
 
 реализиованные ETL-подсистемы:
 
