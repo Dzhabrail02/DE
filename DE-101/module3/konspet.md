@@ -15,6 +15,8 @@ Airflow - оркестратор задач, где pipline - это [DAG](https
 
 ![etl_logs](https://github.com/Dzhabrail02/DE/blob/main/DE-101/module3/images/etl_logs%20dbeaver.png?raw=true)
 
+![DAG](https://github.com/Dzhabrail02/DE/blob/main/DE-101/module3/images/DAG.png?raw=true)
+
 реализиованные ETL-подсистемы:
 
 1. Extracting System
