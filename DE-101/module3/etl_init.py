@@ -37,9 +37,20 @@ def extracting_data(file_name, sheet_name):
         df[col] = df[col].dt.strftime('%Y-%m-%d')
 
     string_column = ','.join(df.columns).lower().replace(' ', '_').replace('-', '')
-    data_tuple = [tuple(row) for row in df.values]
+    
+    df.to_csv(f'/opt/airflow/dags/files/{sheet_name}.csv', index=False)
+    path = f'/opt/airflow/dags/files/{sheet_name}.csv'
 
-    return string_column, data_tuple
+    return string_column, path
+
+
+def read_csv(path: str):
+    """
+    Чтение csv файла - возвращает список кортежей
+    """
+    df = pd.read_csv(path)
+    data_tuple = [tuple(row) for row in df.values]
+    return data_tuple
 
 def insert_data(schema_name, table_name, pk_column, string_column, data_tuple):
     pg_hook = PostgresHook(postgres_conn_id='db_datalern')
@@ -84,7 +95,7 @@ def logging_table (dag_id, command_name, status, rows_cnt = 0, errore = ' '):
         Записывает в таблицу логов статус, ошибку, этапы дага 
         """
         pg_hook = PostgresHook(postgres_conn_id='db_datalern')
-        
+
         try:
             querry_check = "select job_id from etl.logs where job_id = %s"
             get_jobid = pg_hook.get_records(querry_check, parameters=[dag_id])

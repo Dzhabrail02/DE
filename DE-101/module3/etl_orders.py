@@ -14,7 +14,8 @@ from etl_init import (logging_table,
                       json_logs, 
                       check_pk, 
                       extracting_data,
-                      insert_data)
+                      insert_data,
+                      read_csv)
 
 default_args = {
     'owner':'dzhabrail',
@@ -38,8 +39,29 @@ with DAG(
     
     table_name, schema_name = 'orders', 'staging'
 
-    file_name, sheet_name = '/opt/airflow/dags/Sample - Superstore.xlsx', 'Orders'
+    file_name, sheet_name = '/opt/airflow/dags/files/Sample - Superstore.xlsx', 'Orders'
     
+
+    @task
+    def extarct(file_name, sheet_name, **context):
+        try:
+            wraper_extract = json_logs(extracting_data)
+            data_extract_dict, result = wraper_extract(file_name, sheet_name)
+            string_column, path = result[0], result[1]
+
+            ti: TaskInstance = context['ti']
+            ti.xcom_push(key='string_column', value=string_column)
+            ti.xcom_push(key='path', value=path)
+            ti.xcom_push(key='data_extract_dict', value=data_extract_dict)
+
+        except Exception as e:
+            print(str(e))
+            command_name = context['dag'].dag_id
+            err_message = str(e)
+            logging_table(dag_id=dag_id, command_name=command_name, errore=err_message)
+            raise
+
+
 
     @task
     def check_pk_column(table_name, schema_name, **context):
@@ -59,8 +81,8 @@ with DAG(
             print(str(e))
             command_name = context['dag'].dag_id
             err_message = str(e)
-            status = js.dumps(dict(), ensure_ascii=False)
             logging_table(dag_id=dag_id, command_name=command_name, errore=err_message)
+            raise
 
             
    
@@ -73,15 +95,20 @@ with DAG(
             pk_column = ti.xcom_pull(task_ids='check_pk_column', key='pk_column')
             pk_check_dict = ti.xcom_pull(task_ids='check_pk_column', key='etl_status')
 
-            wraper_extract = json_logs(extracting_data)
-            data_extract_dict, result = wraper_extract(file_name, sheet_name)
-            string_column, data_tuple = result[0], result[1]
+            path_to_csv = ti.xcom_pull(task_ids='extarct', key='path')
+            string_column = ti.xcom_pull(task_ids='extarct', key='string_column')
+            data_extract_dict = ti.xcom_pull(task_ids='extarct', key='data_extract_dict')
+            
+            wraper_read_csv = json_logs(read_csv)
+            reading_dict, result = wraper_read_csv(path_to_csv)
+            data_tuple = result
 
+            
             wraper_insert = json_logs(insert_data) 
-            insertr_dict, _ = wraper_insert(schema_name, table_name, pk_column, string_column, data_tuple)
+            insert_dict, _ = wraper_insert(schema_name, table_name, pk_column, string_column, data_tuple)
             rows_cnt = get_count_table(schema_name, table_name)
 
-            status = {**pk_check_dict, **data_extract_dict, **insertr_dict}
+            status = {**pk_check_dict, **data_extract_dict, **reading_dict, **insert_dict}
 
             status = js.dumps(status, ensure_ascii=False)
             logging_table(dag_id=dag_id, command_name=command_name, status=status, rows_cnt=rows_cnt)
@@ -90,12 +117,17 @@ with DAG(
             print(str(e))
             err_message = str(e)
             status = js.dumps(dict(), ensure_ascii=False)
-            logging_table(dag_id=dag_id, command_name=command_name, errore=err_message)
+
+            error_status = js.dumps({'error': err_message}, ensure_ascii=False)
+
+            logging_table(dag_id=dag_id, status=error_status, command_name=command_name, errore=err_message)
+            raise
 
 
-        
+    extract = extarct(file_name, sheet_name)
+
     check = check_pk_column(table_name, schema_name)
 
     load = load_data(schema_name, table_name)
 
-    check >> load
+    [check, extract] >> load
