@@ -1,19 +1,19 @@
 # Модуль про ETL/ELT
 
 >E - подключениме к источникам (файлы, БД, JDBC/ODBC, API, FTP)
-T - если по середине, то можно сделать понипуляцию над данными, создать новые поля, проверить кач-во данных перед загрузкой, то есть в RAM какого-то orchestrations tool, иначе - после загрузки используя диалект хранилища (Python, SQL)
-L - загрузка данных (insert into или Bulk load) bulk load - копируем целый файл и сразу записываем в базу.
-backfilling - обработка исторических данных.
+>T - если по середине, то можно сделать понипуляцию над данными, создать новые поля, проверить кач-во данных перед загрузкой, то есть в RAM какого-то orchestrations tool, иначе - после загрузки используя диалект хранилища (Python, SQL)
+>L - загрузка данных (insert into или Bulk load) bulk load - копируем целый файл и сразу записываем в базу.
+>backfilling - обработка исторических данных.
 
 
-Airflow - оркестратор задач, где pipline - это DAG.
-Для запуска etl в Airflow создал модуль etl_init: в нем функции для ETL таблиц в staging, core_layer и data_mart, 
+Airflow - оркестратор задач, где pipline - это [DAG](https://github.com/Dzhabrail02/DE/blob/main/DE-101/module3/etl_orders.py).
+Для запуска etl в Airflow создал модуль [etl_init](https://github.com/Dzhabrail02/DE/blob/main/DE-101/module3/etl_init.py): в нем функции для ETL таблиц в staging, core_layer и data_mart, 
 а также функции логирования этапов дага - в таблицу etl_logs записываются: 
 - кол-во строк, которые было загружено
 - логи в json-формате (полученные функцией-декоратором `json_logs`)
 - имя и id дага
 
-![etl_logs]()
+![etl_logs](https://github.com/Dzhabrail02/DE/blob/main/DE-101/module3/images/etl_logs%20dbeaver.png?raw=true)
 
 реализиованные ETL-подсистемы:
 
